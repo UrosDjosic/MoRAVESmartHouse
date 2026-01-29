@@ -1,0 +1,37 @@
+{
+    "pi_device" : {
+        "name" : "PI1"
+    },
+    "mqtt" : {
+        "client_id" : "pi1_simulator",
+        "topic" : "pi1",
+        "broker" : "localhost",
+        "port" : 1883,
+        "batch_interval" : 2,
+        "batch_size" : 10
+    },
+    "devices" :
+    [
+        {
+            "code" : "ds1",
+            "freq": 3,
+            "simulated": true
+        },
+        {
+            "code" : "dus1",
+            "freq" : 5,
+            "simulated": true
+        },
+        {
+            "code": "dpir1",
+            "freq": 4,
+            "simulated" : true
+        },
+        {
+            "code": "dms",
+            "freq": 10,
+            "simulated" : true
+        }
+    
+    ]
+}
