@@ -1,7 +1,6 @@
 {
-    "pi_device" : {
-        "name" : "PI1"
-    },
+    "pi" : "1",
+    "device" : "Morava",
     "mqtt" : {
         "client_id" : "pi1_simulator",
         "topic" : "pi1",
