@@ -15,11 +15,18 @@ import time
 import datetime
 from shared.settings import Settings
 from components.dpir1 import run_dpir1
+from components.ds1 import run_ds1
+from components.dus1 import run_dus1
+from components.dms import run_dms
+
 from threading import *
 from shared.mqtt import start_batch_sender, batch_queue
 
 all_devices = {
-    "dpir1" : run_dpir1
+    "dpir1" : run_dpir1,
+    "ds1" : run_ds1,
+    "dms" : run_dms,
+    "dus1" : run_dus1
 }
 
 
@@ -32,7 +39,7 @@ if __name__ == "__main__":
     for device in settings.devices:
         if device.code not in all_devices.keys():
             continue
-        all_devices[device.code](device, threads, stop_event,settings.pi_device)
+        all_devices[device.code](device, threads, stop_event)
 
     start_batch_sender(stop_event=stop_event,batch_queue=batch_queue,mqtt_settings=settings.mqtt)
 

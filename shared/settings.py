@@ -7,7 +7,8 @@ from shared.mqtt import MqttSettings
 
 @dataclass
 class Settings:
-    pi_device: PiDevice
+    pi: str
+    device_name : str
     mqtt : MqttSettings
     devices: List[Device]
 
@@ -17,10 +18,11 @@ class Settings:
         with open(filepath) as f:
             data = json.load(f)
 
-        pi_device = PiDevice(**data["pi_device"])
+        pi = data['pi']
+        device = data['device']
 
         mqtt = MqttSettings(**data['mqtt'])
 
         devices = [Device(**d) for d in data.get("devices", [])]
 
-        return cls(pi_device=pi_device, devices=devices,mqtt = mqtt)
+        return cls(pi = pi, device_name = device , devices=devices,mqtt = mqtt)

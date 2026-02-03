@@ -5,6 +5,7 @@ from flask import Flask
 import paho.mqtt.client as mqtt
 from influxdb_client import InfluxDBClient, Point
 import json
+import logging
 
 # ENV variables
 MQTT_BROKER = os.environ.get("MQTT_BROKER")
@@ -38,7 +39,6 @@ def on_message(client, userdata, msg):
     for item in batch:
         try:
             measurement = item.get("measurement", "unknown")
-            device_name = item.get("device_name", "unknown")
             code = item.get("code", "unknown")
             value = float(item.get("value", 0))
             simulated = item.get("simulated", False)
@@ -46,7 +46,6 @@ def on_message(client, userdata, msg):
             point = (
                 Point(measurement)
                 .tag("topic", msg.topic)
-                .tag("device_name", device_name)
                 .tag("code", code)
                 .field("value", value)
                 .field("simulated", 1 if simulated else 0)  # <-- store as int
@@ -55,10 +54,10 @@ def on_message(client, userdata, msg):
 
 
             write_api.write(INFLUX_BUCKET, INFLUX_ORG, point)
-            print(f"Saved point: {item}")
+            log.info(f"Saved point: {item}")
 
         except Exception as e:
-            print("Failed to write point:", e)
+            log.warning("Failed to write point:", e)
 
 def mqtt_thread():
     client = mqtt.Client("flask-mqtt")
@@ -71,4 +70,14 @@ def mqtt_thread():
 Thread(target=mqtt_thread, daemon=True).start()
 
 if __name__ == "__main__":
+    logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    )
+    log = logging.getLogger("mqtt-influx")
+    log.info("ENV CONFIG")
+    log.info(f"MQTT_BROKER={MQTT_BROKER}")
+    log.info(f"MQTT_TOPIC={MQTT_TOPIC}")
+    log.info(f"INFLUX_URL={INFLUX_URL}")
+    log.info(f"INFLUX_BUCKET={INFLUX_BUCKET}")
     app.run(host="0.0.0.0", port=5000)

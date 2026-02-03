@@ -1,29 +1,28 @@
 import threading
 import time
 from shared.mqtt import batch_queue
-from simulators import dpir1
+from shared import sensor_sim
 from shared.device import Device
 from shared.pi_device import PiDevice
 import random
 
-def dpir1_callback(code,value, device_info : PiDevice, settings):
+def dpir1_callback(code, settings):
     payload = {
         "measurement": "door pir 1",
-        "device_name": device_info.name,
         "code": code,
-        "value": value,
+        "value": 1,
         "simulated": settings.simulated
     }
     batch_queue.put(payload) 
     print(f"[{code}] Sent to buffer: motion detected")
 
-def run_dpir1(settings : Device, threads, stop_event, device_info):
+def run_dpir1(settings : Device, threads, stop_event):
         if settings.simulated:
             code = settings.code
             print(f'Starting {code} simulator')
             dpir1_thread = threading.Thread(
-                 target = dpir1.run_simulator, 
-                 args=(settings.freq, lambda c: dpir1_callback(c,random.choice([0,1]), device_info, settings), stop_event, code),
+                 target = sensor_sim.run_simulator, 
+                 args=(settings.freq, lambda c: dpir1_callback(c, settings), stop_event, code),
                  daemon=True
             )
             dpir1_thread.start()
