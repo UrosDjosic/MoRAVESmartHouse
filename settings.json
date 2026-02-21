@@ -4,7 +4,7 @@
     "mqtt" : {
         "client_id" : "pi1_simulator",
         "topic" : "pi1",
-        "broker" : "localhost",
+        "broker" : "192.168.107.177",
         "port" : 1883,
         "batch_interval" : 2,
         "batch_size" : 10
@@ -13,23 +13,57 @@
     [
         {
             "code" : "ds1",
-            "freq": 3,
+            "freq": 7,
+            "pin" : 17,
+            "device_name" : "pi1",
             "simulated": true
         },
         {
             "code" : "dus1",
+            "device_name" : "pi1",
             "freq" : 5,
             "simulated": true
         },
         {
             "code": "dpir1",
+            "device_name" : "pi1",
+            "dl" : {
+                "code": "dl",
+                "device_name" : "pi1",
+                "freq": 4,
+                "simulated" : true
+            },
+            "freq": 4,
+            "simulated" : true,
+            "pin" : 25
+        },
+        {
+            "code": "dms",
+            "device_name" : "pi1",
             "freq": 4,
             "simulated" : true
         },
         {
-            "code": "dms",
-            "freq": 10,
+            "code": "dl",
+            "device_name" : "pi1",
+            "freq": 4,
             "simulated" : true
+        },
+        {
+            "code" : "db",
+            "device_name" : "pi1",
+            "duration": 0.1,
+            "freq" : 5,
+            "pitch": 10000,
+            "pin": 18,
+            "simulated" : true
+        },
+        {
+            "code": "dht1",
+            "device_name" : "pi3",
+            "freq": 4,
+            "pin" : 18,
+            "simulated" : false
         }
     
     ]
