@@ -4,6 +4,7 @@ from shared.mqtt import batch_queue
 from shared import sensor_sim
 from shared.device import DoorUltrasonic
 from shared.pi_device import PiDevice
+from shared.distance_update import add_distance
 import random
 
 def dus2_callback(distance,code, settings: DoorUltrasonic):
@@ -14,6 +15,7 @@ def dus2_callback(distance,code, settings: DoorUltrasonic):
         "value": distance,
         "simulated": settings.simulated
     }
+    add_distance(distance,code)
     batch_queue.put(payload) 
     print(f"[{code}] Sent to buffer: motion detected")
 
@@ -23,14 +25,13 @@ def run_dus2(settings : DoorUltrasonic, threads, stop_event):
             print(f'Starting {code} simulator')
             dus1_thread = threading.Thread(
                  target = sensor_sim.run_simulator, 
-                 args=(settings.freq, lambda c: dus2_callback(c, settings,distance = random.randint(0,100)), stop_event, code),
+                 args=(settings.freq, lambda c: dus2_callback(random.randint(0,100),c, settings), stop_event, code),
                  daemon=True
             )
             dus1_thread.start()
             threads.append(dus1_thread)
             print(f"{code} simulator started")
         else:
-
             '''
             Docstring for run_dus1
             

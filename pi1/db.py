@@ -1,18 +1,17 @@
 import threading
 import time
-from shared.mqtt import batch_queue
+from shared.mqtt import priority_queue
 from shared.device import DoorBuzzer
 
-_buzzer_lock = threading.Lock()
-_buzzer_active_event = threading.Event()  # Set = active, clear = inactive
+_buzzer_active_event = threading.Event()
 
 def activate_buzzer():
+    print(f"[BUZZER] Activated, event id: {id(_buzzer_active_event)}")
     _buzzer_active_event.set()
-    print("[BUZZER] Activated")
 
 def deactivate_buzzer():
-    _buzzer_active_event.clear()
     print("[BUZZER] Deactivated")
+    _buzzer_active_event.clear()
 
 def db_callback(code, settings: DoorBuzzer, value):
     payload = {
@@ -22,26 +21,31 @@ def db_callback(code, settings: DoorBuzzer, value):
         "value": value,
         "simulated": settings.simulated
     }
-    batch_queue.put(payload)
+    priority_queue.put(payload)
     print(f"[{code}] Sent to buffer: buzzer state={value}")
 
 def _buzzer_loop(settings: DoorBuzzer, stop_event):
     code = settings.code
+    last_state = 0
+    print(f"[BUZZER LOOP] Started, event id: {id(_buzzer_active_event)}")
+
     while not stop_event.is_set():
-        # Block until buzzer should be active (or stop_event fires)
         active = _buzzer_active_event.wait(timeout=0.1)
-        if active and not stop_event.is_set():
+
+        if active and last_state != 1:
+            print("[BUZZER] Sending ON")
             db_callback(code, settings, 1)
-            time.sleep(0.5)
-            # Check again before sending OFF — might have been deactivated
-            if not stop_event.is_set():
-                db_callback(code, settings, 0)
-                time.sleep(0.5)
+            last_state = 1
+        elif not active and last_state != 0:
+            print("[BUZZER] Sending OFF")
+            db_callback(code, settings, 0)
+            last_state = 0
+
+        time.sleep(0.1)
 
 def run_db(settings: DoorBuzzer, threads, stop_event):
     if settings.simulated:
-        code = settings.code
-        print(f'Starting {code} simulator')
+        print(f'Starting {settings.code} simulator')
         db_thread = threading.Thread(
             target=_buzzer_loop,
             args=(settings, stop_event),
@@ -49,8 +53,9 @@ def run_db(settings: DoorBuzzer, threads, stop_event):
         )
         db_thread.start()
         threads.append(db_thread)
-        print(f"{code} simulator started")
+        print(f"{settings.code} simulator started, alive: {db_thread.is_alive()}")
     else:
+        '''
         import RPi.GPIO as GPIO
         
         GPIO.setmode(GPIO.BCM)
@@ -72,3 +77,5 @@ def run_db(settings: DoorBuzzer, threads, stop_event):
         db_thread = threading.Thread(target=buzz_loop, daemon=True)
         db_thread.start()
         threads.append(db_thread)
+        '''
+        

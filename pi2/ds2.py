@@ -1,7 +1,7 @@
 import threading
 import time
 from shared.device import Device
-from shared.mqtt import batch_queue
+from shared.mqtt import batch_queue,priority_queue
 from simulators.ds_simulator import run_ds_simulator
 from pi1.db import activate_buzzer,deactivate_buzzer
 
@@ -18,9 +18,8 @@ def trigger_alarm(code, device_name, simulated):
         "value": 1,
         "simulated": simulated
     }
-    batch_queue.put(payload)
+    priority_queue.put(payload)
     print(f"[{code}] ALARM ACTIVATED - door open too long!")
-    activate_buzzer()
 
 def clear_alarm(code, device_name, simulated):
     payload = {
@@ -32,7 +31,6 @@ def clear_alarm(code, device_name, simulated):
     }
     batch_queue.put(payload)
     print(f"[{code}] Alarm cleared - door closed.")
-    deactivate_buzzer()
 
 def on_door_open(code, settings: Device):
     """Poziva se kada se vrata otvore (signal HIGH)."""
@@ -87,23 +85,21 @@ def run_ds2(settings : Device, threads, stop_event):
             delay = settings.freq
             code = settings.code
             print("Starting {code} simulator")
-            ds2_thread = threading.Thread(target = run_ds_simulator, args=(delay, lambda c, s,state: ds2_callback(c, s,state), stop_event, code, settings))
-            ds2_thread.start()
-            threads.append(ds2_thread)
+            ds1_thread = threading.Thread(target = run_ds_simulator, args=(delay, lambda c, s,state: ds2_callback(c, s,state), stop_event, code, settings))
+            ds1_thread.start()
+            threads.append(ds1_thread)
             print(f"{code} sumilator started")
         else:
             """
-            Docstring for run_ds1
-            
-            :param settings: Description
-            :type settings: Device
-            :param threads: Description
-            :param stop_event: Description
-            :param device_info: Description
-
             import RPi.GPIO as GPIO
             port_btn = settings.pin
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(port_btn, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.add_event_detect(port_btn, GPIO.BOTH, callback=lambda c: ds1_callback(settings['code'], settings), bouncetime = 100)
+            GPIO.add_event_detect(
+                port_btn,
+                GPIO.BOTH,
+                callback=lambda channel: ds1_callback(settings.code, settings, 1 - GPIO.input(port_btn)),
+                bouncetime=200
+            ) 
             """
+              

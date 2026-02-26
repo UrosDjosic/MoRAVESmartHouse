@@ -28,3 +28,13 @@ class DoorMembraneSwitch(Device):
     r_pins : Optional[list[int]] = None
     c_pins : Optional[list[int]] = None
 
+@dataclass
+class BRGB(Device):
+    red_pin : Optional[int] = None
+    green_pin : Optional[int] = None
+    blue_pin : Optional[int] = None
+
+@dataclass 
+class IR(Device):
+    brgb : Optional[BRGB] = None
+    

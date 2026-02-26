@@ -1,108 +1,69 @@
-import RPi.GPIO as GPIO
-from time import sleep
-
-#disable warnings (optional)
-GPIO.setwarnings(False)
-
-GPIO.setmode(GPIO.BCM)
-
-RED_PIN = 12
-GREEN_PIN = 13
-BLUE_PIN = 19
-
-#set pins as outputs
-GPIO.setup(RED_PIN, GPIO.OUT)
-GPIO.setup(GREEN_PIN, GPIO.OUT)
-GPIO.setup(BLUE_PIN, GPIO.OUT)
-
-def turnOff():
-    GPIO.output(RED_PIN, GPIO.LOW)
-    GPIO.output(GREEN_PIN, GPIO.LOW)
-    GPIO.output(BLUE_PIN, GPIO.LOW)
-    
-def white():
-    GPIO.output(RED_PIN, GPIO.HIGH)
-    GPIO.output(GREEN_PIN, GPIO.HIGH)
-    GPIO.output(BLUE_PIN, GPIO.HIGH)
-    
-def red():
-    GPIO.output(RED_PIN, GPIO.HIGH)
-    GPIO.output(GREEN_PIN, GPIO.LOW)
-    GPIO.output(BLUE_PIN, GPIO.LOW)
-
-def green():
-    GPIO.output(RED_PIN, GPIO.LOW)
-    GPIO.output(GREEN_PIN, GPIO.HIGH)
-    GPIO.output(BLUE_PIN, GPIO.LOW)
-    
-def blue():
-    GPIO.output(RED_PIN, GPIO.LOW)
-    GPIO.output(GREEN_PIN, GPIO.LOW)
-    GPIO.output(BLUE_PIN, GPIO.HIGH)
-    
-def yellow():
-    GPIO.output(RED_PIN, GPIO.HIGH)
-    GPIO.output(GREEN_PIN, GPIO.HIGH)
-    GPIO.output(BLUE_PIN, GPIO.LOW)
-    
-def purple():
-    GPIO.output(RED_PIN, GPIO.HIGH)
-    GPIO.output(GREEN_PIN, GPIO.LOW)
-    GPIO.output(BLUE_PIN, GPIO.HIGH)
-    
-def lightBlue():
-    GPIO.output(RED_PIN, GPIO.LOW)
-    GPIO.output(GREEN_PIN, GPIO.HIGH)
-    GPIO.output(BLUE_PIN, GPIO.HIGH)
-
 import threading
 import time
-from simulators.led_simulator import run_dl_simulator
-from shared.device import Device
+from simulators.brgb_simulator import run_brgb_simulator
+from shared.device import Device, BRGB
 from shared.mqtt import batch_queue
-
-'''
-def led_on(pin):
-    import RPi.GPIO as GPIO
-    import time
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(pin,GPIO.OUT)
-    GPIO.output(pin,GPIO.HIGH)
-    time.sleep(10)
-    GPIO.output(pin,GPIO.LOW)
-'''
+#from shared.colours import * 
 
 
+# --- BRGB callback ---
+def brgb_callback(state: bool, color: str, settings: BRGB):
 
-def dl_callback(state,code, settings : Device):
+    """Turn LED ON/OFF with given color and send MQTT batch."""
+    # Send to MQTT batch
     payload = {
         "measurement": "light_state",
         "device_name": settings.device_name,
         "code": settings.code,
         "value": 1 if state else 0,
-        "simulated": settings.simulated
+        "simulated": settings.simulated,
+        "color": color
     }
     batch_queue.put(payload)
-    '''
-    if not settings.simulated and state == 1:
-        led_on(settings.pin)
-    '''
+    print(f"[{settings.code}] Sent to buffer: {'ON' if state else 'OFF'}, color={color}")
 
-    
-    print(f"[{settings.code}] Sent to buffer: {'ON' if state else 'OFF'}")
-
-
-def run_dl(settings : Device, threads, stop_event):
+    # Apply color if turning ON
+    if state:
         if settings.simulated:
-            delay = settings.freq
-            code = settings.code
-            print("Starting {code} simulator")
+            print(f"[{settings.code}] Simulated {color} ON")
 
-            dl_thread = threading.Thread(
-                target=run_dl_simulator, 
-                args=(delay, lambda s, c: dl_callback(s, c, settings), stop_event, code)
-            )
-            dl_thread.start()
-            threads.append(dl_thread)
-            print("Dl simulator started")
+        else:
+            #func = colors.get(color.lower(), turnOff) NOT SIMULATED
+            #func(settings) NOT SIMULATED
+            time.sleep(3)
+            print(f"Turning on color {color}!")
+    '''
+    elif not settings.simulated:
+        turnOff(settings)
+    '''
+    
+    
+            
 
+# --- Run BRGB (simulator or real) ---
+def run_brgb(settings: BRGB, threads: list, stop_event: threading.Event):
+    if settings.simulated:
+        delay = settings.freq
+        code = settings.code
+        print(f"Starting {code} simulator")
+
+        t = threading.Thread(
+            target=run_brgb_simulator, 
+            args=(delay, lambda s, c: brgb_callback(s, c, settings), stop_event, code)
+        )
+        t.start()
+        threads.append(t)
+        print(f"{code} simulator started")
+    else:
+        import RPi.GPIO as GPIO
+        GPIO.setwarnings(False)
+        # setmode should be global in main, but just in case:
+        try:
+            GPIO.setmode(GPIO.BCM)
+        except:
+            pass
+        GPIO.setup(settings.red_pin, GPIO.OUT)
+        GPIO.setup(settings.green_pin, GPIO.OUT)
+        GPIO.setup(settings.blue_pin, GPIO.OUT)
+        turnOff(settings)  # start OFF
+        print(f"{settings.code} ready for real BRGB control")

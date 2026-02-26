@@ -23,9 +23,14 @@ services:
       - influxdb
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning      # ← add
+      - ./grafana/dashboards:/var/lib/grafana/dashboards      # ← add
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: secretpassword
+      GF_SECURITY_ALLOW_EMBEDDING: "true"                     # ← add
+      GF_AUTH_ANONYMOUS_ENABLED: "true"                       # ← add
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"                    # ← add
 
   mqtt:
     image: eclipse-mosquitto:2
@@ -42,17 +47,16 @@ services:
       - mqtt
       - influxdb
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       MQTT_BROKER: mqtt
       MQTT_TOPIC: pi1
+      MQTT_SEND_TOPIC: actuator
       INFLUX_URL: http://influxdb:8086
       INFLUX_TOKEN: U848YJ9tFvHIzB9yO1FfC_p7ewSz027ieu4rlN9lCkjU-ncXqdYVIn11IzUb8kn6x8j1iPb2jGowx7C4lkglog==
       INFLUX_ORG: moRAVE
       INFLUX_BUCKET: home
 
-
 volumes:
   influxdb-data:
   grafana-data:
-  mqtt:

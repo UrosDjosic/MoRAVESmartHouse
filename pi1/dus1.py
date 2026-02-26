@@ -4,6 +4,7 @@ from shared.mqtt import batch_queue
 from shared import sensor_sim
 from shared.device import DoorUltrasonic
 from shared.pi_device import PiDevice
+from shared.distance_update import add_distance
 import random
 
 def dus1_callback(distance,code, settings: DoorUltrasonic):
@@ -14,8 +15,9 @@ def dus1_callback(distance,code, settings: DoorUltrasonic):
         "value": distance,
         "simulated": settings.simulated
     }
+    add_distance(distance,code)
     batch_queue.put(payload) 
-    print(f"[{code}] Sent to buffer: motion detected")
+    print(f"[{code}] Sent to buffer: motion detected, distance {distance}")
 
 def run_dus1(settings : DoorUltrasonic, threads, stop_event):
         if settings.simulated:
@@ -30,21 +32,12 @@ def run_dus1(settings : DoorUltrasonic, threads, stop_event):
             threads.append(dus1_thread)
             print(f"{code} simulator started")
         else:
-
-            '''
-            Docstring for run_dus1
-            
-            :param settings: Description
-            :type settings: DoorUltrasonic
-            :param threads: Description
-            :param stop_event: Description
-
-
             def loop(settings : DoorUltrasonic,stop_event):
                 import RPi.GPIO as GPIO
                 TRIG_PIN = settings.trig_pin
                 ECHO_PIN = settings.echo_pin
 
+                GPIO.setmode(GPIO.BCM)
                 GPIO.setup(TRIG_PIN, GPIO.OUT)
                 GPIO.setup(ECHO_PIN, GPIO.IN)
 
@@ -88,4 +81,4 @@ def run_dus1(settings : DoorUltrasonic, threads, stop_event):
             args = (settings,stop_event))
             dus1_thread.start()
             threads.append(dus1_thread)
-            '''
+            print("DUSSY1 activated")

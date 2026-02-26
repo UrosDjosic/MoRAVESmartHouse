@@ -1,7 +1,7 @@
 import threading
 import time
 from shared.device import Device
-from shared.mqtt import batch_queue
+from shared.mqtt import batch_queue,priority_queue
 from simulators.ds_simulator import run_ds_simulator
 from pi1.db import activate_buzzer,deactivate_buzzer
 
@@ -18,9 +18,8 @@ def trigger_alarm(code, device_name, simulated):
         "value": 1,
         "simulated": simulated
     }
-    batch_queue.put(payload)
+    priority_queue.put(payload)
     print(f"[{code}] ALARM ACTIVATED - door open too long!")
-    activate_buzzer()
 
 def clear_alarm(code, device_name, simulated):
     payload = {
@@ -32,7 +31,6 @@ def clear_alarm(code, device_name, simulated):
     }
     batch_queue.put(payload)
     print(f"[{code}] Alarm cleared - door closed.")
-    deactivate_buzzer()
 
 def on_door_open(code, settings: Device):
     """Poziva se kada se vrata otvore (signal HIGH)."""
@@ -92,6 +90,7 @@ def run_ds1(settings : Device, threads, stop_event):
             threads.append(ds1_thread)
             print(f"{code} sumilator started")
         else:
+            """
             import RPi.GPIO as GPIO
             port_btn = settings.pin
             GPIO.setmode(GPIO.BCM)
@@ -101,4 +100,6 @@ def run_ds1(settings : Device, threads, stop_event):
                 GPIO.BOTH,
                 callback=lambda channel: ds1_callback(settings.code, settings, 1 - GPIO.input(port_btn)),
                 bouncetime=200
-            )   
+            ) 
+            """
+              

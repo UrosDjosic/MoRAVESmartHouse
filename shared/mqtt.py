@@ -8,7 +8,7 @@ import queue
 
 @dataclass
 class MqttSettings:
-    client_id : str
+    client_id : str 
     broker: str
     port: int
     topic: str
@@ -27,9 +27,12 @@ class MqttSettings:
          )
 
 batch_queue = queue.Queue()
+priority_queue = queue.Queue()
+
+alarm_enabled = False
 
 def start_batch_sender(batch_queue, stop_event, mqtt_settings : MqttSettings):
-    client = mqtt.Client(client_id="pi1_batch_sender")
+    client = mqtt.Client(client_id=mqtt_settings.client_id)
     connected = threading.Event()
 
     def on_connect(client, userdata, flags, rc):
@@ -50,6 +53,13 @@ def start_batch_sender(batch_queue, stop_event, mqtt_settings : MqttSettings):
     def sender():
         buffer = []
         while not stop_event.is_set():
+            while not priority_queue.empty():
+                msg = priority_queue.get_nowait()
+                if msg['measurement'] == 'alarm' and not alarm_enabled:
+                    print(f"⚡ Alarm suppressed — system not armed")
+                    continue 
+                client.publish(mqtt_settings.topic, json.dumps([msg]))
+                print(f"⚡ Priority sent: {msg}")
             print("Batch sender waiting for messages...")
             try:
                 while len(buffer) < mqtt_settings.batch_size:
@@ -66,6 +76,10 @@ def start_batch_sender(batch_queue, stop_event, mqtt_settings : MqttSettings):
                     buffer.clear()
             except Exception as e:
                 print("Error in batch sender:", e)
+
+    def consumer():
+        while not stop_event.is_set():
+            print("Started consumer thread!")
 
     t = threading.Thread(target=sender, daemon=True)
     t.start()

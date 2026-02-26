@@ -1,56 +1,136 @@
 import threading
 import time
 from shared.mqtt import batch_queue
-from shared import sensor_sim
 from shared.device import Device
-from shared.pi_device import PiDevice
-import random
 from simulators.dms_simulator import run_dms_simulator
+import shared.mqtt as mqtt_state
 
-def dms_callback(code, key, settings : Device):
-    payload = {
+CORRECT_PIN = "1234"
+
+_current_input = []
+_pin_lock = threading.Lock()
+
+# ── System state ───────────────────────────────────────────────────────────
+system_armed = False      # True = system is active/armed
+alarm_active = False      # True = alarm is currently ringing
+_arm_timer = None         # 10s arming delay timer
+
+def is_armed():
+    return system_armed
+
+def is_alarm_active():
+    return alarm_active
+
+def arm_system(code, settings):
+    global system_armed
+    system_armed = True
+    mqtt_state.alarm_enabled = True  # ← enable alarms when armed
+    print("[DMS] ✅ System ARMED")
+
+def disarm_system(code, settings):
+    global system_armed, alarm_active
+    system_armed = False
+    alarm_active = False
+    mqtt_state.alarm_enabled = False  # ← disable alarms when disarmed
+    print("[DMS] 🔓 System DISARMED")
+    _send_alarm(code, settings, 0)
+    from pi1.db import deactivate_buzzer
+    deactivate_buzzer()
+
+def trigger_alarm(code, settings):
+    global alarm_active
+    if not system_armed:
+        return
+    alarm_active = True
+    print("[DMS] 🚨 ALARM TRIGGERED")
+    _send_alarm(code, settings, 1)
+    from pi1.db import activate_buzzer
+    activate_buzzer()
+
+def _send_alarm(code, settings, value):
+    batch_queue.put({
+        "measurement": "alarm",
+        "device_name": settings.device_name,
+        "code": code,
+        "value": value,
+        "simulated": settings.simulated
+    })
+
+def _send_system_state(code, settings, state):
+    batch_queue.put({
+        "measurement": "system_state",
+        "device_name": settings.device_name,
+        "code": code,
+        "state": state,
+        "simulated": settings.simulated
+    })
+
+def dms_callback(code, key, settings: Device):
+    batch_queue.put({
         "measurement": "door membrane switch",
         "device_name": settings.device_name,
         "code": code,
-        "value" : 1,
+        "key": key,
         "simulated": settings.simulated
-    }
-    batch_queue.put(payload) 
-    print(f"[{code}] Sent to buffer: {key} key pressed")
+    })
+    print(f"[{code}] Key pressed: {key}")
+    _handle_pin_input(key, code, settings)
 
+def _handle_pin_input(key, code, settings):
+    global _current_input, _arm_timer
 
-def run_dms(settings:Device, threads, stop_event):
+    with _pin_lock:
+        if key == '*':
+            _current_input = []
+            print("[DMS] Input reset")
+            return
+
+        if key == '#':
+            entered = ''.join(_current_input)
+            _current_input = []
+            print(f"[DMS] PIN entered: {entered}")
+
+            if entered == CORRECT_PIN:
+                if not system_armed and not alarm_active:
+                    # ── Arm after 10s delay ────────────────────────────
+                    print("[DMS] ✅ Correct PIN — arming in 10s...")
+                    if _arm_timer:
+                        _arm_timer.cancel()
+                    _arm_timer = threading.Timer(10.0, arm_system, args=(code, settings))
+                    _arm_timer.start()
+                else:
+                    # ── Disarm / clear alarm ───────────────────────────
+                    print("[DMS] ✅ Correct PIN — disarming system")
+                    if _arm_timer:
+                        _arm_timer.cancel()
+                    disarm_system(code, settings)
+            else:
+                print("[DMS] ❌ Wrong PIN")
+            return
+
+        _current_input.append(key)
+        print(f"[DMS] Input so far: {''.join(_current_input)}")
+
+def run_dms(settings: Device, threads, stop_event):
     if settings.simulated:
         code = settings.code
         delay = settings.freq
         print(f"Starting {code} simulator")
-        keypad_thread = threading.Thread(
+        t = threading.Thread(
             target=run_dms_simulator,
             args=(delay, lambda c, k: dms_callback(c, k, settings), stop_event, code),
             daemon=True
         )
-        keypad_thread.start()
-        threads.append(keypad_thread)
+        t.start()
+        threads.append(t)
     else:
-        """
-        Docstring for run_dms
-        
-        :param settings: Description
-        :type settings: Device
-        :param threads: Description
-        :param stop_event: Description
-
-         '''
         def keypad_loop(settings, stop_event):
             import RPi.GPIO as GPIO
-            
-            R_PINS = settings.r_pins # Lista tipa [4,12,15,16]
-            C_PINS = settings.c_pins # Takodje
+            R_PINS = settings.r_pins
+            C_PINS = settings.c_pins
             code = settings.code
-
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BCM)
-
             for pin in R_PINS:
                 GPIO.setup(pin, GPIO.OUT)
             for pin in C_PINS:
@@ -76,8 +156,7 @@ def run_dms(settings:Device, threads, stop_event):
             finally:
                 GPIO.cleanup()
 
-        dms_thread = threading.Thread(target=keypad_loop, args=(settings, stop_event), daemon=True)
-        dms_thread.start()
-        threads.append(dms_thread)
+        t = threading.Thread(target=keypad_loop, args=(settings, stop_event), daemon=True)
+        t.start()
+        threads.append(t)
         print(f"DMS real sensor started on code: {settings.code}")
-        """

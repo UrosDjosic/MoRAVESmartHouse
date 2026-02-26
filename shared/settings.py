@@ -7,7 +7,7 @@ from shared.mqtt import MqttSettings
 from shared.device_factory import device_factory
 @dataclass
 class Settings:
-    pi: str
+    pi: int
     device_name: str
     mqtt: MqttSettings
     devices: list[Device]
