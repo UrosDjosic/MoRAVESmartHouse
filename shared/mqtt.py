@@ -3,7 +3,6 @@ import threading
 import time
 import json
 import paho.mqtt.client as mqtt
-from paho.mqtt.client import CallbackAPIVersion
 from dataclasses import dataclass
 import queue
 
@@ -30,19 +29,34 @@ class MqttSettings:
 batch_queue = queue.Queue()
 
 def start_batch_sender(batch_queue, stop_event, mqtt_settings : MqttSettings):
-    # Do NOT pass callback_api_version
     client = mqtt.Client(client_id="pi1_batch_sender")
+    connected = threading.Event()
+
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT broker")
+            connected.set()
+        else:
+            print("Failed to connect, rc=", rc)
+
+    client.on_connect = on_connect
     client.connect(mqtt_settings.broker, mqtt_settings.port)
     client.loop_start()
+
+    if not connected.wait(timeout=5):
+        print("MQTT connection failed, batch sender exiting")
+        return
 
     def sender():
         buffer = []
         while not stop_event.is_set():
+            print("Batch sender waiting for messages...")
             try:
-                while len(buffer) < 10:
+                while len(buffer) < mqtt_settings.batch_size:
                     try:
-                        msg = batch_queue.get(timeout=2)
+                        msg = batch_queue.get(timeout=mqtt_settings.batch_interval)
                         buffer.append(msg)
+                        print("Got message for batch:", msg)
                     except queue.Empty:
                         break
 

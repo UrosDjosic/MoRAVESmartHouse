@@ -41,6 +41,8 @@ services:
     depends_on:
       - mqtt
       - influxdb
+    ports:
+      - "5000:5000"
     environment:
       MQTT_BROKER: mqtt
       MQTT_TOPIC: pi1
@@ -48,7 +50,6 @@ services:
       INFLUX_TOKEN: U848YJ9tFvHIzB9yO1FfC_p7ewSz027ieu4rlN9lCkjU-ncXqdYVIn11IzUb8kn6x8j1iPb2jGowx7C4lkglog==
       INFLUX_ORG: moRAVE
       INFLUX_BUCKET: home
-  
 
 
 volumes:

@@ -4,35 +4,45 @@ from shared.mqtt import batch_queue
 from shared import sensor_sim
 from shared.device import Device
 from shared.pi_device import PiDevice
+from components.dl import led_on
 import random
 
-def ds1_callback(code, settings):
+def dpir2_callback(code, settings,value):
     payload = {
-        "measurement": "door sensor (button)",
+        "measurement": "door pir",
         "code": code,
-        "value": 1,
+        "value": value,
         "simulated": settings.simulated
     }
     batch_queue.put(payload) 
+
+    if not settings.simulated:
+         led_on(settings.dl_pin)
+    
     print(f"[{code}] Sent to buffer: motion detected")
 
-def run_ds1(settings : Device, threads, stop_event):
+def run_dpir2(settings : Device, threads, stop_event):
         if settings.simulated:
             code = settings.code
             print(f'Starting {code} simulator')
             dpir1_thread = threading.Thread(
                  target = sensor_sim.run_simulator, 
-                 args=(settings.freq, lambda c: ds1_callback(c, settings), stop_event, code),
-                 daemon=True
+                 args=(settings.freq, lambda c: dpir2_callback(c, settings,1), stop_event, code),
             )
             dpir1_thread.start()
             threads.append(dpir1_thread)
             print("DPIR1 simulator started")
-        '''
+        
         else:
             import RPi.GPIO as GPIO
-            port_btn = settings['pin']
+            pin = settings.pin
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(port_btn, GPIO.IN)
-            GPIO.add_event_detect(port_btn, GPIO.RISING, callback=lambda c: dpir1_callback(settings['code'], device_info, settings))
-        '''
+            GPIO.setup(pin, GPIO.IN)
+
+            def gpio_callback(channel):
+                value = GPIO.input(channel) 
+                dpir2_callback(settings.code, settings, value=value)
+
+            GPIO.add_event_detect(pin, GPIO.RISING, callback=gpio_callback)
+            print("DPIR started")
+        
