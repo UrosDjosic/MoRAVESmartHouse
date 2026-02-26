@@ -162,7 +162,6 @@ function updateUI(data) {
   }
 
   Object.entries(data).forEach(([code, sensor]) => {
-    console.log(sensor);
     if (sensor.measurement === 'alarm' && sensor.value === 1) {
         showAlarmPopup(code);
     }

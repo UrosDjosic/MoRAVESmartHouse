@@ -4,6 +4,7 @@ from shared.mqtt import batch_queue
 from shared import sensor_sim
 from shared.device import Device
 from shared.pi_device import PiDevice
+from shared.distance_update import persons,send_alarm
 import random
 
 def dpir3_callback(code, settings,value):
@@ -13,8 +14,9 @@ def dpir3_callback(code, settings,value):
         "value": value,
         "simulated": settings.simulated
     }
-    batch_queue.put(payload) 
-    
+    batch_queue.put(payload)
+
+
     print(f"[{code}] Sent to buffer: motion detected")
 
 def run_dpir3(settings : Device, threads, stop_event):

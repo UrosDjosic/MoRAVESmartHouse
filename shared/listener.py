@@ -6,6 +6,7 @@ from pi3.brgb import brgb_callback
 from pi2.btn import btn_callback
 from shared.settings import Settings
 from shared.device import Device
+from shared.mqtt import alarm_enabled
 
 class MqttListener:
 
@@ -77,6 +78,8 @@ class MqttListener:
             dl_callback(value,code,setting)
         elif code == "db" and self.settings.pi == 1:
             print("Toggle buzzer:", value)
+            if alarm_enabled:
+                return
             if value == 1:
                 activate_buzzer()
             else:

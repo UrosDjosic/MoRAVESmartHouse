@@ -10,7 +10,7 @@ import random
 
 
 ALARM_ACCEL_THRESHOLD = 0.25
-ALARM_GYRO_THRESHOLD = 10
+ALARM_GYRO_THRESHOLD = 1.1
 
 last_accel = None
 
@@ -19,13 +19,11 @@ def gsg_callback(code, settings: Device, accel, gyro):
 
     alarm = False
 
-    #Acceleration delta check
     if last_accel is not None:
         delta = [abs(accel[i] - last_accel[i]) for i in range(3)]
         if any(d > ALARM_ACCEL_THRESHOLD for d in delta):
             alarm = True
 
-    #Gyro check
     if any(abs(g) > ALARM_GYRO_THRESHOLD for g in gyro):
         alarm = True
 
@@ -38,7 +36,6 @@ def gsg_callback(code, settings: Device, accel, gyro):
         "code": code,
         "accel": accel,
         "gyro": gyro,
-        "alarm": alarm,
         "simulated": settings.simulated
     }
 

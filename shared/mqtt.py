@@ -55,9 +55,6 @@ def start_batch_sender(batch_queue, stop_event, mqtt_settings : MqttSettings):
         while not stop_event.is_set():
             while not priority_queue.empty():
                 msg = priority_queue.get_nowait()
-                if msg['measurement'] == 'alarm' and not alarm_enabled:
-                    print(f"⚡ Alarm suppressed — system not armed")
-                    continue 
                 client.publish(mqtt_settings.topic, json.dumps([msg]))
                 print(f"⚡ Priority sent: {msg}")
             print("Batch sender waiting for messages...")

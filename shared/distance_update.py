@@ -28,6 +28,13 @@ def update_persons(settings: Device):
     global _alarm_sent
 
     direction = check_distance(settings.code)
+    if persons == 0 and direction is None:
+        if not _alarm_sent:
+            send_alarm(settings)
+            _alarm_sent = True
+    else:
+        _alarm_sent = False
+
     if direction is None:
         return
 
@@ -35,13 +42,7 @@ def update_persons(settings: Device):
     update_person_count(direction, settings.code)
     send_update(settings)
 
-    # ── Alarm only when last person leaves ─────────────────────────────
-    if persons == 0 and direction == 'leaving':
-        if not _alarm_sent:
-            send_alarm(settings)
-            _alarm_sent = True
-    else:
-        _alarm_sent = False
+
     
 def check_distance(code):
     distances = deque()
