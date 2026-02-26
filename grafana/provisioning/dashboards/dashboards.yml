@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: smarthome
+    folder: SmartHome
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

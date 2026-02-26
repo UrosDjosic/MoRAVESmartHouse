@@ -1,0 +1,1134 @@
+{
+  "title": "SmartHome IoT",
+  "uid": "smarthome",
+  "refresh": "5s",
+  "schemaVersion": 36,
+  "version": 1,
+  "panels": [
+    {
+      "id": 100,
+      "title": "\u2500\u2500 PI 1 \u2014 Door & Porch \u2500\u2500",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "content": "## PI 1 \u2014 Door & Porch",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 1,
+      "title": "DS1 \u2014 Door Sensor",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"ds1\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "DUS1 \u2014 Ultrasonic Distance",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 2,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-30m)\n  |> filter(fn:(r)=>r.code==\"dus1\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthcm",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          },
+          "color": {
+            "fixedColor": "cyan",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "DPIR1 \u2014 Door Motion",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 16,
+        "y": 2,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dpir1\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 25,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "DL \u2014 Door Light",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dl\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "DB \u2014 Door Buzzer",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 7,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"db\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "DMS — Membrane Switch",
+      "type": "table",
+      "gridPos": {
+        "x": 16,
+        "y": 7,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dms\")\n  |> filter(fn:(r)=>r._field==\"key\")\n  |> sort(columns:[\"_time\"], desc: true)\n  |> limit(n:20)"
+        }
+      ],
+      "options": {
+        "sortBy": [{ "displayName": "Time", "desc": true }]
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "_value" },
+            "properties": [{ "id": "displayName", "value": "Key Pressed" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "_time" },
+            "properties": [{ "id": "displayName", "value": "Time" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "DUS1 \u2014 Distance History",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-3h)\n  |> filter(fn:(r)=>r.code==\"dus1\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthcm",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "color": {
+            "fixedColor": "cyan",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "DPIR1 \u2014 Motion History",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-3h)\n  |> filter(fn:(r)=>r.code==\"dpir1\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 25,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 200,
+      "title": "\u2500\u2500 PI 2 \u2014 Kitchen & Garage \u2500\u2500",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "content": "## PI 2 \u2014 Kitchen & Garage",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 9,
+      "title": "DS2 \u2014 Garage Door Sensor",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"ds2\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "DUS2 \u2014 Garage Ultrasonic",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 20,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-30m)\n  |> filter(fn:(r)=>r.code==\"dus2\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthcm",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          },
+          "color": {
+            "fixedColor": "cyan",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "DPIR2 \u2014 Garage Motion",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 16,
+        "y": 20,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dpir2\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 25,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "DHT3 \u2014 Kitchen Temp & Humidity",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht3\")\n  |> filter(fn:(r)=>r._field==\"temperature\")"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht3\")\n  |> filter(fn:(r)=>r._field==\"humidity\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temperature"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Temperature"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "humidity"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Humidity"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "title": "BTN \u2014 Kitchen Button",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 25,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"btn\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "GSG \u2014 Gyroscope",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 16,
+        "y": 25,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-30m)\n  |> filter(fn:(r)=>r.code==\"gsg\")\n  |> filter(fn:(r)=>r._field==\"accel_x\" or r._field==\"accel_y\" or r._field==\"accel_z\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "DHT3 \u2014 Temperature History",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 12,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-3h)\n  |> filter(fn:(r)=>r.code==\"dht3\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          },
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 16,
+      "title": "GSG \u2014 Gyroscope History",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-3h)\n  |> filter(fn:(r)=>r.code==\"gsg\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 300,
+      "title": "\u2500\u2500 PI 3 \u2014 Bedroom & Living Room \u2500\u2500",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "content": "## PI 3 \u2014 Bedroom & Living Room",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 17,
+      "title": "DHT1 \u2014 Bedroom Temp & Humidity",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht1\")\n  |> filter(fn:(r)=>r._field==\"temperature\")"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht1\")\n  |> filter(fn:(r)=>r._field==\"humidity\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temperature"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Temperature"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "humidity"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Humidity"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "title": "DHT2 \u2014 Master Bedroom Temp & Humidity",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 38,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht2\")\n  |> filter(fn:(r)=>r._field==\"temperature\")"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht2\")\n  |> filter(fn:(r)=>r._field==\"humidity\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temperature"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "light-blue"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Temperature"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "humidity"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Humidity"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "title": "DHT3 \u2014 Kitchen Temp & Humidity",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 16,
+        "y": 38,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht3\")\n  |> filter(fn:(r)=>r._field==\"temperature\")"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht3\")\n  |> filter(fn:(r)=>r._field==\"humidity\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temperature"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Temperature"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "humidity"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "cyan"
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Humidity"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "title": "IR — Infrared Signal",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"ir\")\n  |> filter(fn:(r)=>r._field==\"value\")\n  |> sort(columns:[\"_time\"], desc: true)\n  |> limit(n:20)"
+        }
+      ],
+      "options": {
+        "sortBy": [{ "displayName": "Time", "desc": true }]
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "_value" },
+            "properties": [{ "id": "displayName", "value": "Signal" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "_time" },
+            "properties": [{ "id": "displayName", "value": "Time" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "title": "BRGB \u2014 RGB Light State",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 43,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"brgb\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 22,
+      "title": "DHT1 vs DHT2 vs DHT3 \u2014 Temperature Comparison",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 16,
+        "y": 43,
+        "w": 8,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht1\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht2\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"dht3\")\n  |> filter(fn:(r)=>r._field==\"value\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          }
+        }
+      }
+    },
+    {
+      "id": 400,
+      "title": "\u2500\u2500 Global \u2500\u2500",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "content": "## Global \u2014 Persons & Alarms",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 23,
+      "title": "Persons in Building (Now)",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 8,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-24h)\n  |> filter(fn:(r)=>r._measurement==\"persons\")\n  |> filter(fn:(r)=>r._field==\"count\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 30,
+            "lineWidth": 3,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "cyan",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 24,
+      "title": "Persons Count Over Time",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 50,
+        "w": 16,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"home\")\n  |> range(start:-7d)\n  |> filter(fn:(r)=>r._measurement==\"persons\")\n  |> filter(fn:(r)=>r._field==\"count\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "stepInterpolation": "stepAfter"
+          },
+          "color": {
+            "fixedColor": "cyan",
+            "mode": "fixed"
+          }
+        }
+      }
+    },
+    {
+      "id": 25,
+      "title": "LCD — Display",
+      "type": "table",
+      "gridPos": { "x": 16, "y": 50, "w": 8, "h": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+          "query": "from(bucket:\"home\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r.code==\"lcd\")\n  |> filter(fn:(r)=>r._field==\"line1\" or r._field==\"line2\")\n  |> last()"
+        }
+      ]
+    }
+  ]
+}

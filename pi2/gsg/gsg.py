@@ -1,24 +1,63 @@
 #!/usr/bin/env python3
 import threading
 import time
-from shared.mqtt import batch_queue
+from shared.mqtt import batch_queue,priority_queue
 from shared import sensor_sim
 from shared.device import Device
 from shared.pi_device import PiDevice
 from simulators.gsg_simulator import run_gsg_simulator
 import random
 
-def gsg_callback(code, settings : Device, accel, gyro):
+
+ALARM_ACCEL_THRESHOLD = 0.25
+ALARM_GYRO_THRESHOLD = 10
+
+last_accel = None
+
+def gsg_callback(code, settings: Device, accel, gyro):
+    global last_accel
+
+    alarm = False
+
+    #Acceleration delta check
+    if last_accel is not None:
+        delta = [abs(accel[i] - last_accel[i]) for i in range(3)]
+        if any(d > ALARM_ACCEL_THRESHOLD for d in delta):
+            alarm = True
+
+    #Gyro check
+    if any(abs(g) > ALARM_GYRO_THRESHOLD for g in gyro):
+        alarm = True
+
+    #Update last accel
+    last_accel = accel
+
     payload = {
         "measurement": "gyroscope",
         "device_name": settings.device_name,
         "code": code,
         "accel": accel,
         "gyro": gyro,
-        "simulated": settings['simulated'] 
+        "alarm": alarm,
+        "simulated": settings.simulated
     }
-    batch_queue.put(payload) 
-    print(f"[{settings.code}] Sent to buffer: Accel:{accel}, Gyro:{gyro}")
+
+    batch_queue.put(payload)
+
+    if alarm:
+        print(f"🚨 [{code}] ALARM — Significant movement detected on GSG!")
+        send_alarm(settings)
+    else:
+        print(f"[{settings.code}] Accel:{accel}, Gyro:{gyro}")
+
+def send_alarm(settings:Device):
+    payload = {
+        "measurement": "alarm",
+        "device_name": settings.device_name,
+        "code": settings.code,
+        "simulated": settings.simulated
+    }
+    priority_queue.put(payload)
 
 
 def gsg_loop(settings :Device, stop_event):
@@ -36,24 +75,24 @@ def gsg_loop(settings :Device, stop_event):
         
         gsg_callback(code, settings, accel, gyro)
         
-        time.sleep(settings.get('delay', 0.5))
+        time.sleep(settings.freq)
 
 
 def run_gsg(settings : Device, threads, stop_event):
-    if settings['simulated']:
-        code = settings['code']
+    if settings.simulated:
+        code = settings.code
         print(f'Starting {code} simulator')
-        dpir1_thread = threading.Thread(
+        gsg_thread = threading.Thread(
             target=run_gsg_simulator, 
             args=(
-                settings['delay'], 
+                settings.freq, 
                 lambda c, a, g: gsg_callback(c, settings, a, g), 
                 stop_event, 
                 code
             )
         )
-        dpir1_thread.start()
-        threads.append(dpir1_thread)
+        gsg_thread.start()
+        threads.append(gsg_thread)
         print(f"{code} simulator started")
     else:
         print(f"Starting {settings.code} real sensor")

@@ -1,10 +1,10 @@
 {
-    "pi" : "1",
+    "pi" : 2,
     "device" : "Morava",
     "mqtt" : {
-        "client_id" : "pi1_simulator",
+        "client_id" : "pi_sender",
         "topic" : "pi1",
-        "broker" : "192.168.107.177",
+        "broker" : "172.20.10.3",
         "port" : 1883,
         "batch_interval" : 2,
         "batch_size" : 10
@@ -13,7 +13,7 @@
     [
         {
             "code" : "ds1",
-            "freq": 7,
+            "freq": 11,
             "pin" : 17,
             "device_name" : "pi1",
             "simulated": true
@@ -22,7 +22,9 @@
             "code" : "dus1",
             "device_name" : "pi1",
             "freq" : 5,
-            "simulated": true
+            "simulated": true,
+            "trig_pin" : 18,
+            "echo_pin" : 17
         },
         {
             "code": "dpir1",
@@ -31,22 +33,27 @@
                 "code": "dl",
                 "device_name" : "pi1",
                 "freq": 4,
+                "pin" : 26,
                 "simulated" : true
             },
             "freq": 4,
             "simulated" : true,
-            "pin" : 25
+            "pin" : 16
         },
         {
             "code": "dms",
             "device_name" : "pi1",
             "freq": 4,
-            "simulated" : true
+            "simulated" : true,
+            "r_pins" : [17,27,22,10],
+            "c_pins" : [23,24,25,8]
+
         },
         {
             "code": "dl",
             "device_name" : "pi1",
             "freq": 4,
+            "pin" : 26,
             "simulated" : true
         },
         {
@@ -58,13 +65,101 @@
             "pin": 18,
             "simulated" : true
         },
+
+        {
+            "code": "ds2",
+            "device_name" : "pi2",
+            "freq": 8,
+            "simulated" : true
+        },
+        {
+            "code": "dus2",
+            "device_name" : "pi2",
+            "freq": 6,
+            "simulated" : true
+        },
+        {
+            "code": "dpir2",
+            "device_name" : "pi2",
+            "freq": 7,
+            "simulated" : true
+        },
+        {
+            "code": "4sd",
+            "device_name" : "pi2",
+            "freq": 5,
+            "simulated" : true
+        },
+        {
+            "code": "btn",
+            "device_name" : "pi2",
+            "freq": 3,
+            "simulated" : true
+        },
+        {
+            "code": "dht3",
+            "device_name" : "pi2",
+            "freq": 3,
+            "simulated" : true
+        },
+        {
+            "code": "gsg",
+            "device_name" : "pi2",
+            "freq": 5,
+            "simulated" : true
+        },
         {
             "code": "dht1",
             "device_name" : "pi3",
             "freq": 4,
             "pin" : 18,
-            "simulated" : false
+            "simulated" : true
+        },
+        {
+            "code": "dht2",
+            "device_name" : "pi3",
+            "freq": 4,
+            "pin" : 18,
+            "simulated" : true
+        },
+        {
+            "code": "brgb",
+            "device_name" : "pi3",
+            "freq": 6,
+            "red_pin" : 16,
+            "green_pin" : 20,
+            "blue_pin" : 21,
+            "simulated" : true
+        },
+        {
+            "code": "lcd",
+            "device_name" : "pi3",
+            "freq": 7,
+            "simulated" : true
+        },
+        {
+            "code": "dpir3",
+            "device_name" : "pi3",
+            "freq": 5,
+            "simulated" : true
+        },
+        {
+            "code": "ir",
+            "device_name" : "pi3",
+            "freq": 4,
+            "simulated" : true,
+            "pin" : 18,
+            "brgb" : {
+                "code": "brgb",
+                "device_name" : "pi3",
+                "freq": 6,
+                "red_pin" : 16,
+                "green_pin" : 20,
+                "blue_pin" : 21,
+                "simulated" : true
+            }
         }
+
     
     ]
 }

@@ -6,7 +6,7 @@ from shared.device import Device
 from shared.pi_device import PiDevice
 import random
 import threading
-from ..pi2.dht.DHT11 import DHT
+from shared.latest_dht import add_to_latest
 
 def dht2_callback(code, device_info,temperature,humidity):
     payload = {
@@ -17,10 +17,13 @@ def dht2_callback(code, device_info,temperature,humidity):
         "simulated": device_info.simulated
     }
     batch_queue.put(payload) 
+    add_to_latest(code,temperature,humidity)    
+
     print(f"[{code}] Sent to buffer: motion detected")
 
 
 def dht_loop(settings : Device,stop_event):
+     '''
      import RPi.GPIO as GPIO
 
      pin = settings.pin
@@ -30,15 +33,36 @@ def dht_loop(settings : Device,stop_event):
         chk = dht.readDHT11()
         if chk == dht.DHTLIB_OK:
             dht2_callback(code,settings,dht.temperature,dht.humidity)
+        else:
+            print(f"Nesto ne valja {chk}")
         time.sleep(settings.get('delay',4))
+     
+     '''
+    
 
 def run_dht2(settings : Device, threads, stop_event):
+        def simulated_read(code):
+            """
+            Generate natural-looking DHT readings.
+            """
+            # Choose a realistic base temperature & humidity for the room
+            base_temp = random.uniform(20.0, 25.0)  # e.g., room temp
+            base_hum  = random.uniform(40.0, 60.0)  # e.g., indoor humidity
+
+            while not stop_event.is_set():
+                # Add small random fluctuations
+                temp = round(base_temp + random.uniform(-0.5, 0.5), 1)
+                hum  = round(base_hum + random.uniform(-2.0, 2.0), 0)
+
+                dht2_callback(code, settings, temp, hum)
+                time.sleep(settings.freq)
         if settings.simulated:
             code = settings.code
             print(f'Starting {code} simulator')
             dht2_thread = threading.Thread(
-                 target = sensor_sim.run_simulator, 
-                 args=(settings.freq, lambda c: dht2_callback(c, settings, random.randint(0,40),random.randint(0,100)), stop_event, code),
+                target=simulated_read,
+                args=(code,),
+                daemon=True
             )
             dht2_thread.start()
             threads.append(dht2_thread)

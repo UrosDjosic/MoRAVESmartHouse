@@ -1,0 +1,12 @@
+apiVersion: 1
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      version: Flux
+      organization: moRAVE
+      defaultBucket: home
+    secureJsonData:
+      token: U848YJ9tFvHIzB9yO1FfC_p7ewSz027ieu4rlN9lCkjU-ncXqdYVIn11IzUb8kn6x8j1iPb2jGowx7C4lkglog==

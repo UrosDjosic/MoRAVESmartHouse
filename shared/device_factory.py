@@ -1,4 +1,4 @@
-from shared.device import Device, DoorPir, DoorBuzzer, DoorUltrasonic, DoorMembraneSwitch
+from shared.device import Device, DoorPir, DoorBuzzer, DoorUltrasonic, DoorMembraneSwitch, BRGB, IR
 from typing import Dict
 
 def device_factory(d: Dict) -> Device:
@@ -21,6 +21,12 @@ def device_factory(d: Dict) -> Device:
     # DoorMembraneSwitch
     if code.startswith("dms"):
         return DoorMembraneSwitch(**d)
-
+    if code.startswith("brgb") :
+        return BRGB(**d)
+    
+    if code.startswith("ir"):
+        if "brgb" in d and isinstance(d["brgb"], dict):
+            d["brgb"] = BRGB(**d["brgb"])
+        return IR(**d)
     # Default: generic Device
     return Device(**d)

@@ -5,6 +5,7 @@ from shared import sensor_sim
 from shared.device import DoorPir
 from shared.pi_device import PiDevice
 from pi1.dl import dl_callback
+from shared.distance_update import update_persons
 import random
 
 def dpir1_callback(code, settings:DoorPir, value):
@@ -16,7 +17,7 @@ def dpir1_callback(code, settings:DoorPir, value):
         "simulated": settings.simulated
     }
     batch_queue.put(payload) 
-
+    update_persons(settings)
     if not settings.simulated:
          dl_callback(1,settings.dl)
     

@@ -1,564 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartHome — IoT Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --surface2: #181c24;
-    --border: #1e2330;
-    --accent: #00e5ff;
-    --accent2: #7c3aed;
-    --accent3: #f59e0b;
-    --green: #10b981;
-    --red: #ef4444;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --pi1: #00e5ff;
-    --pi2: #10b981;
-    --pi3: #7c3aed;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Animated background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Top nav */
-  .nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    height: 60px;
-    background: rgba(10,12,16,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .nav-logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 0.15em;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .nav-logo .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-  }
-
-  .nav-time {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-
-  .nav-status {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    color: var(--green);
-    font-family: 'Space Mono', monospace;
-  }
-
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-  }
-
-  /* PI Toolbar */
-  .pi-toolbar {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 0 2rem;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .pi-tab {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1.8rem;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    user-select: none;
-  }
-
-  .pi-tab:hover { color: var(--text); background: var(--surface2); }
-
-  .pi-tab.active { color: var(--text); }
-  .pi-tab[data-pi="1"].active { border-color: var(--pi1); color: var(--pi1); }
-  .pi-tab[data-pi="2"].active { border-color: var(--pi2); color: var(--pi2); }
-  .pi-tab[data-pi="3"].active { border-color: var(--pi3); color: var(--pi3); }
-
-  .pi-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px; height: 20px;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-  }
-
-  .pi-tab[data-pi="1"] .pi-badge { background: rgba(0,229,255,0.15); color: var(--pi1); }
-  .pi-tab[data-pi="2"] .pi-badge { background: rgba(16,185,129,0.15); color: var(--pi2); }
-  .pi-tab[data-pi="3"] .pi-badge { background: rgba(124,58,237,0.15); color: var(--pi3); }
-
-  .pi-tab .sensor-count {
-    margin-left: auto;
-    font-size: 0.65rem;
-    font-family: 'Space Mono', monospace;
-    color: var(--muted);
-    background: var(--border);
-    padding: 1px 5px;
-    border-radius: 3px;
-  }
-
-  .toolbar-sep {
-    width: 1px;
-    height: 28px;
-    background: var(--border);
-    margin: 0 0.5rem;
-  }
-
-  .alarm-btn {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    border: 1px solid rgba(239,68,68,0.3);
-    background: rgba(239,68,68,0.08);
-    color: var(--red);
-    font-size: 0.75rem;
-    font-weight: 600;
-    font-family: 'Space Mono', monospace;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-  }
-  .alarm-btn:hover { background: rgba(239,68,68,0.15); border-color: var(--red); }
-  .alarm-btn.active { background: var(--red); color: white; animation: alarmFlash 1s infinite; }
-
-  @keyframes alarmFlash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-  }
-
-  /* Main layout */
-  .main {
-    position: relative;
-    z-index: 1;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-
-  /* Panel views */
-  .panel-view { display: none; }
-  .panel-view.active { display: block; animation: fadeIn 0.3s ease; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Section header */
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .section-title {
-    font-size: 1.4rem;
-    font-weight: 800;
-  }
-
-  .section-sub {
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-  }
-
-  /* Grid */
-  .grid {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .grid-4 { grid-template-columns: repeat(4, 1fr); }
-  .grid-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-2 { grid-template-columns: repeat(2, 1fr); }
-
-  @media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 700px) { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
-
-  /* Cards */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem;
-    transition: border-color 0.2s, transform 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .card:hover { border-color: #2a3040; transform: translateY(-1px); }
-  .card:hover::before { opacity: 1; }
-
-  .card.pi1::before { background: var(--pi1); }
-  .card.pi2::before { background: var(--pi2); }
-  .card.pi3::before { background: var(--pi3); }
-
-  .card-label {
-    font-size: 0.65rem;
-    font-family: 'Space Mono', monospace;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-  }
-
-  .card-code {
-    display: inline-block;
-    font-size: 0.6rem;
-    font-family: 'Space Mono', monospace;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: var(--surface2);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    margin-bottom: 0.6rem;
-  }
-
-  .card-value {
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-
-  .card-unit {
-    font-size: 0.9rem;
-    font-weight: 400;
-    color: var(--muted);
-    margin-left: 2px;
-  }
-
-  .card-status {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.7rem;
-    font-family: 'Space Mono', monospace;
-    margin-top: 0.5rem;
-  }
-
-  .status-indicator {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-  }
-
-  .status-on { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .status-off { background: var(--muted); }
-  .status-alert { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse 1s infinite; }
-
-  /* Toggle switch */
-  .toggle-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.8rem;
-  }
-
-  .toggle {
-    position: relative;
-    width: 40px; height: 22px;
-    cursor: pointer;
-  }
-
-  .toggle input { opacity: 0; width: 0; height: 0; }
-
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 22px;
-    transition: 0.3s;
-  }
-
-  .toggle-slider::after {
-    content: '';
-    position: absolute;
-    width: 16px; height: 16px;
-    left: 3px; top: 3px;
-    background: var(--muted);
-    border-radius: 50%;
-    transition: 0.3s;
-  }
-
-  .toggle input:checked + .toggle-slider { background: rgba(16,185,129,0.3); }
-  .toggle input:checked + .toggle-slider::after {
-    transform: translateX(18px);
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-  }
-
-  /* Persons counter */
-  .persons-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .persons-count {
-    font-size: 4rem;
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-    font-family: 'Space Mono', monospace;
-    text-shadow: 0 0 30px rgba(0,229,255,0.3);
-  }
-
-  .persons-info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
-  .persons-info p { font-size: 0.75rem; color: var(--muted); font-family: 'Space Mono', monospace; }
-
-  /* Floor plan mini */
-  .floorplan-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    grid-column: span 2;
-  }
-
-  .floorplan-title {
-    font-size: 0.65rem;
-    font-family: 'Space Mono', monospace;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-  }
-
-  .rooms-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-  }
-
-  .room-pill {
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    font-size: 0.7rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .room-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* Alarm panel */
-  .alarm-panel {
-    background: rgba(239,68,68,0.06);
-    border: 1px solid rgba(239,68,68,0.2);
-    border-radius: 12px;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .alarm-icon {
-    font-size: 1.5rem;
-    animation: alarmFlash 0.8s infinite;
-  }
-
-  .alarm-text h3 { font-size: 0.9rem; font-weight: 700; color: var(--red); }
-  .alarm-text p { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 0.2rem; }
-
-  .alarm-dismiss {
-    margin-left: auto;
-    padding: 0.4rem 1rem;
-    border-radius: 6px;
-    border: 1px solid rgba(239,68,68,0.4);
-    background: transparent;
-    color: var(--red);
-    font-size: 0.75rem;
-    font-family: 'Space Mono', monospace;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .alarm-dismiss:hover { background: rgba(239,68,68,0.1); }
-
-  /* Kitchen timer */
-  .timer-display {
-    font-family: 'Space Mono', monospace;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--accent3);
-    text-shadow: 0 0 20px rgba(245,158,11,0.3);
-    letter-spacing: 0.1em;
-  }
-
-  .timer-controls {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.8rem;
-  }
-
-  .btn-sm {
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-size: 0.7rem;
-    font-family: 'Space Mono', monospace;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-sm:hover { border-color: var(--accent3); color: var(--accent3); }
-  .btn-sm.active { background: rgba(245,158,11,0.15); border-color: var(--accent3); color: var(--accent3); }
-
-  /* RGB control */
-  .rgb-preview {
-    width: 100%;
-    height: 60px;
-    border-radius: 8px;
-    background: #ff6600;
-    margin-bottom: 0.8rem;
-    transition: background 0.3s;
-    box-shadow: 0 4px 20px rgba(255,102,0,0.3);
-  }
-
-  .color-swatches {
-    display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-
-  .swatch {
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.15s;
-  }
-  .swatch:hover, .swatch.active { border-color: white; transform: scale(1.15); }
-
-  /* Grafana embed placeholder */
-  .grafana-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-    grid-column: span 2;
-  }
-
-  .grafana-placeholder {
-    color: var(--muted);
-    font-size: 0.8rem;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .grafana-placeholder .icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
-
-  /* Spacer */
-  .mb { margin-bottom: 1.5rem; }
-
-  /* Responsive toolbar */
-  @media (max-width: 600px) {
-    .pi-tab { padding: 0.75rem 1rem; font-size: 0.75rem; }
-    .nav { padding: 0 1rem; }
-    .main { padding: 1rem; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartHome — IoT Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- Nav -->
+<!-- ── Nav ────────────────────────────────────────────────────────────────── -->
 <nav class="nav">
   <div class="nav-logo">
     <div class="dot"></div>
@@ -566,12 +17,16 @@
   </div>
   <div class="nav-time" id="clock">--:--:--</div>
   <div class="nav-status">
-    <div class="status-dot"></div>
-    MQTT CONNECTED
+    <div class="sse-dot" id="sseDot"></div>
+    <span id="sseStatus" style="color:var(--muted)">CONNECTING...</span>
   </div>
 </nav>
 
-<!-- PI Toolbar -->
+<div id="alarmPopup" class="alarm-popup hidden">
+  <span id="alarmText"></span>
+</div>
+
+<!-- ── PI Toolbar ─────────────────────────────────────────────────────────── -->
 <div class="pi-toolbar">
   <div class="pi-tab active" data-pi="1" onclick="switchPI(1)">
     <span class="pi-badge">P1</span>
@@ -593,116 +48,112 @@
     <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;margin-left:6px;">BEDROOM / LIVING</span>
     <span class="sensor-count">6</span>
   </div>
-  <button class="alarm-btn" id="alarmBtn" onclick="toggleAlarm()">
-    ⚠ ALARM OFF
-  </button>
 </div>
 
-<!-- Main content -->
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
 <main class="main">
 
-  <!-- PI 1 Panel: Door / Porch -->
+  <!-- ── PI 1: Door / Porch ─────────────────────────────────────────────── -->
   <div class="panel-view active" id="panel-1">
     <div class="section-header">
       <h2 class="section-title" style="color:var(--pi1)">PI 1 — Door &amp; Porch</h2>
       <span class="section-sub">DS1 · DL · DUS1 · DB · DPIR1 · DMS · WEBC</span>
     </div>
 
-    <!-- Persons counter -->
     <div class="persons-card">
-      <div class="persons-count" id="personCount">02</div>
+      <div class="persons-count" id="personCount">--</div>
       <div class="persons-info">
         <h3>Persons in Building</h3>
         <p>Updated via DUS1 + DPIR1 movement detection</p>
       </div>
       <div style="margin-left:auto;text-align:right;">
         <div style="font-size:0.65rem;font-family:'Space Mono',monospace;color:var(--muted);margin-bottom:4px;">LAST DETECTION</div>
-        <div style="font-size:0.8rem;font-family:'Space Mono',monospace;color:var(--text)" id="lastDetect">2m ago · ENTERING</div>
+        <div style="font-size:0.8rem;font-family:'Space Mono',monospace;color:var(--text)" id="lastDetect">--</div>
       </div>
     </div>
 
     <div class="grid grid-4 mb">
-      <!-- DS1 -->
-      <div class="card pi1">
+
+      <div class="card pi1" id="card-ds1">
         <div class="card-label">Door Sensor</div>
         <div class="card-code">DS1</div>
-        <div class="card-value" style="color:var(--green);font-size:1.3rem">CLOSED</div>
+        <div class="card-value" id="ds1-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="card-status">
-          <div class="status-indicator status-on"></div>
-          <span style="color:var(--muted)">Normal state</span>
+          <div class="status-indicator status-off" id="ds1-indicator"></div>
+          <span id="ds1-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="ds1-time"></div>
       </div>
 
-      <!-- DUS1 -->
-      <div class="card pi1">
+      <div class="card pi1" id="card-dus1">
         <div class="card-label">Ultrasonic Sensor</div>
         <div class="card-code">DUS1</div>
-        <div class="card-value">142<span class="card-unit">cm</span></div>
+        <div class="card-value" id="dus1-value" style="color:var(--muted)">--<span class="card-unit">cm</span></div>
         <div class="card-status">
-          <div class="status-indicator status-on"></div>
-          <span style="color:var(--muted)">No motion</span>
+          <div class="status-indicator status-off" id="dus1-indicator"></div>
+          <span id="dus1-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="dus1-time"></div>
       </div>
 
-      <!-- DPIR1 -->
-      <div class="card pi1">
+      <div class="card pi1" id="card-dpir1">
         <div class="card-label">Motion Sensor</div>
         <div class="card-code">DPIR1</div>
-        <div class="card-value" style="color:var(--muted);font-size:1.3rem">IDLE</div>
+        <div class="card-value" id="dpir1-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="card-status">
-          <div class="status-indicator status-off"></div>
-          <span style="color:var(--muted)">No movement</span>
+          <div class="status-indicator status-off" id="dpir1-indicator"></div>
+          <span id="dpir1-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="dpir1-time"></div>
       </div>
 
-      <!-- DL -->
-      <div class="card pi1">
+      <div class="card pi1" id="card-dl">
         <div class="card-label">Door Light</div>
         <div class="card-code">DL</div>
-        <div class="card-value" style="font-size:1.3rem">LED</div>
+        <div class="card-value" id="dl-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="toggle-wrap">
           <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace">ACTUATOR</span>
           <label class="toggle">
-            <input type="checkbox" onchange="updateLED(this, 'dl-status')">
+            <input type="checkbox" id="dl-toggle" onchange="toggleActuator('dl', this.checked)">
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="card-status" style="margin-top:0.4rem">
-          <div class="status-indicator status-off" id="dl-status"></div>
-          <span style="color:var(--muted)" id="dl-text">OFF</span>
+          <div class="status-indicator status-off" id="dl-indicator"></div>
+          <span id="dl-text" style="color:var(--muted)">OFF</span>
         </div>
+        <div class="last-updated" id="dl-time"></div>
       </div>
 
-      <!-- DB -->
-      <div class="card pi1">
+      <div class="card pi1" id="card-db">
         <div class="card-label">Door Buzzer</div>
         <div class="card-code">DB</div>
-        <div class="card-value" style="font-size:1.3rem">BUZZ</div>
+        <div class="card-value" id="db-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="toggle-wrap">
           <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace">ACTUATOR</span>
           <label class="toggle">
-            <input type="checkbox" onchange="updateLED(this, 'db-status', 'db-text')">
+            <input type="checkbox" id="db-toggle" onchange="toggleActuator('db', this.checked)">
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="card-status" style="margin-top:0.4rem">
-          <div class="status-indicator status-off" id="db-status"></div>
-          <span style="color:var(--muted)" id="db-text">OFF</span>
+          <div class="status-indicator status-off" id="db-indicator"></div>
+          <span id="db-text" style="color:var(--muted)">OFF</span>
         </div>
+        <div class="last-updated" id="db-time"></div>
       </div>
 
-      <!-- DMS -->
-      <div class="card pi1">
+      <div class="card pi1" id="card-dms">
         <div class="card-label">Membrane Switch</div>
         <div class="card-code">DMS</div>
-        <div style="font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;letter-spacing:0.2em;color:var(--muted);margin:0.4rem 0">_ _ _ _</div>
+        <div style="font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;letter-spacing:0.2em;color:var(--muted);margin:0.4rem 0" id="dms-value">_ _ _ _</div>
         <div class="card-status">
-          <div class="status-indicator status-off"></div>
-          <span style="color:var(--muted)">Awaiting PIN</span>
+          <div class="status-indicator status-off" id="dms-indicator"></div>
+          <span id="dms-text" style="color:var(--muted)">Awaiting PIN</span>
         </div>
+        <div class="last-updated" id="dms-time"></div>
       </div>
 
-      <!-- WEBC -->
       <div class="card pi1" style="grid-column: span 2;">
         <div class="card-label">Web Camera</div>
         <div class="card-code">WEBC</div>
@@ -710,114 +161,146 @@
           <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace">📷 STREAM UNAVAILABLE — Configure WEBC endpoint</span>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- PI 2 Panel: Kitchen -->
+  <!-- ── PI 2: Kitchen / Garage ─────────────────────────────────────────── -->
   <div class="panel-view" id="panel-2">
     <div class="section-header">
       <h2 class="section-title" style="color:var(--pi2)">PI 2 — Kitchen &amp; Garage</h2>
       <span class="section-sub">DS2 · DUS2 · DPIR2 · 4SD · BTN · DHT3 · GSG</span>
     </div>
 
+    
+    <div class="persons-card">
+    <div class="persons-count" id="personCount2">--</div>
+    <div class="persons-info">
+      <h3>Persons in Building</h3>
+      <p>Updated via DUS2 + DPIR2 movement detection</p>
+    </div>
+    <div style="margin-left:auto;text-align:right;">
+      <div style="font-size:0.65rem;font-family:'Space Mono',monospace;color:var(--muted);margin-bottom:4px;">LAST DETECTION</div>
+      <div style="font-size:0.8rem;font-family:'Space Mono',monospace;color:var(--text)" id="lastDetect2">--</div>
+    </div>
+  </div>
+
     <div class="grid grid-4 mb">
-      <!-- DS2 -->
-      <div class="card pi2">
+
+      <div class="card pi2" id="card-ds2">
         <div class="card-label">Door Sensor</div>
         <div class="card-code">DS2</div>
-        <div class="card-value" style="color:var(--green);font-size:1.3rem">CLOSED</div>
+        <div class="card-value" id="ds2-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="card-status">
-          <div class="status-indicator status-on"></div>
-          <span style="color:var(--muted)">Normal state</span>
+          <div class="status-indicator status-off" id="ds2-indicator"></div>
+          <span id="ds2-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="ds2-time"></div>
       </div>
 
-      <!-- DUS2 -->
-      <div class="card pi2">
+      <div class="card pi2" id="card-dus2">
         <div class="card-label">Ultrasonic Sensor</div>
         <div class="card-code">DUS2</div>
-        <div class="card-value">88<span class="card-unit">cm</span></div>
+        <div class="card-value" id="dus2-value" style="color:var(--muted)">--<span class="card-unit">cm</span></div>
         <div class="card-status">
-          <div class="status-indicator status-on"></div>
-          <span style="color:var(--muted)">No motion</span>
+          <div class="status-indicator status-off" id="dus2-indicator"></div>
+          <span id="dus2-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="dus2-time"></div>
       </div>
 
-      <!-- DPIR2 -->
-      <div class="card pi2">
+      <div class="card pi2" id="card-dpir2">
         <div class="card-label">Motion Sensor</div>
         <div class="card-code">DPIR2</div>
-        <div class="card-value" style="color:var(--muted);font-size:1.3rem">IDLE</div>
+        <div class="card-value" id="dpir2-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="card-status">
-          <div class="status-indicator status-off"></div>
-          <span style="color:var(--muted)">No movement</span>
+          <div class="status-indicator status-off" id="dpir2-indicator"></div>
+          <span id="dpir2-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="dpir2-time"></div>
       </div>
 
-      <!-- DHT3 -->
-      <div class="card pi2">
+      <div class="card pi2" id="card-dht3">
         <div class="card-label">Kitchen DHT</div>
         <div class="card-code">DHT3</div>
         <div style="display:flex;gap:1rem;align-items:baseline">
-          <div><div class="card-value" style="color:var(--pi2)">22.4<span class="card-unit">°C</span></div></div>
-          <div><div class="card-value" style="color:var(--accent);font-size:1.2rem">58<span class="card-unit">%</span></div></div>
+          <div class="card-value" id="dht3-temp" style="color:var(--pi2)">--<span class="card-unit">°C</span></div>
+          <div class="card-value" id="dht3-hum"  style="color:var(--accent);font-size:1.2rem">--<span class="card-unit">%</span></div>
         </div>
         <div class="card-status">
-          <div class="status-indicator status-on"></div>
-          <span style="color:var(--muted)">Normal</span>
+          <div class="status-indicator status-off" id="dht3-indicator"></div>
+          <span id="dht3-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="dht3-time"></div>
       </div>
 
-      <!-- 4SD Timer -->
       <div class="card pi2" style="grid-column: span 2;">
         <div class="card-label">Kitchen Timer (4-Digit Display)</div>
         <div class="card-code">4SD</div>
         <div class="timer-display" id="timerDisplay">05:00</div>
         <div class="timer-controls">
-          <button class="btn-sm" onclick="timerAction('start')" id="timerStart">▶ START</button>
-          <button class="btn-sm" onclick="timerAction('stop')">■ STOP</button>
-          <button class="btn-sm" onclick="timerAction('reset')">↺ RESET</button>
-          <button class="btn-sm" onclick="addTime(30)">+30s (BTN)</button>
+          <button class="btn-sm" onclick="toggleActuator('btn',1)">+30s (BTN)</button>
         </div>
       </div>
 
-      <!-- BTN -->
-      <div class="card pi2">
+      <div class="card pi2" id="card-btn">
         <div class="card-label">Kitchen Button</div>
         <div class="card-code">BTN</div>
-        <div class="card-value" style="font-size:1.1rem;color:var(--muted)">NOT PRESSED</div>
-        <div style="margin-top:0.6rem;font-size:0.65rem;font-family:'Space Mono',monospace;color:var(--muted)">
-          Adds configured N seconds to timer
-        </div>
+        <div class="card-value" id="btn-value" style="font-size:1.1rem;color:var(--muted)">--</div>
+        <div class="last-updated" id="btn-time"></div>
       </div>
 
-      <!-- GSG -->
-      <div class="card pi2">
-        <div class="card-label">Gyroscope</div>
+      <div class="card pi2" id="card-gsg">
+        <div class="card-label">Gyroscope & Accelerometer</div>
         <div class="card-code">GSG</div>
-        <div style="display:flex;gap:0.7rem;margin-top:0.3rem">
-          <div style="text-align:center">
-            <div style="font-size:0.6rem;font-family:'Space Mono',monospace;color:var(--muted)">X</div>
-            <div style="font-size:1.1rem;font-weight:700">0.2</div>
+        <div style="display:flex;gap:1rem;margin-top:0.5rem">
+          <div>
+            <div style="font-size:0.6rem;font-family:'Space Mono',monospace;color:var(--accent);margin-bottom:0.3rem">ACCEL</div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem">
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;width:10px">X</span>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--red)"    id="gsg-ax">--</span>
+              </div>
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;width:10px">Y</span>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--green)"  id="gsg-ay">--</span>
+              </div>
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;width:10px">Z</span>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--accent)" id="gsg-az">--</span>
+              </div>
+            </div>
           </div>
-          <div style="text-align:center">
-            <div style="font-size:0.6rem;font-family:'Space Mono',monospace;color:var(--muted)">Y</div>
-            <div style="font-size:1.1rem;font-weight:700">0.1</div>
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:0.6rem;font-family:'Space Mono',monospace;color:var(--muted)">Z</div>
-            <div style="font-size:1.1rem;font-weight:700">9.8</div>
+          <div style="width:1px;background:var(--border)"></div>
+          <div>
+            <div style="font-size:0.6rem;font-family:'Space Mono',monospace;color:var(--pi3);margin-bottom:0.3rem">GYRO</div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem">
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;width:10px">X</span>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--red)"    id="gsg-gx">--</span>
+              </div>
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;width:10px">Y</span>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--green)"  id="gsg-gy">--</span>
+              </div>
+              <div style="display:flex;gap:0.4rem;align-items:center">
+                <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;width:10px">Z</span>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--accent)" id="gsg-gz">--</span>
+              </div>
+            </div>
           </div>
         </div>
         <div class="card-status" style="margin-top:0.5rem">
-          <div class="status-indicator status-on"></div>
-          <span style="color:var(--muted)">Stable</span>
+          <div class="status-indicator status-off" id="gsg-indicator"></div>
+          <span id="gsg-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="gsg-time"></div>
       </div>
+
     </div>
   </div>
 
-  <!-- PI 3 Panel: Bedroom / Living -->
+  <!-- ── PI 3: Bedroom / Living Room ────────────────────────────────────── -->
   <div class="panel-view" id="panel-3">
     <div class="section-header">
       <h2 class="section-title" style="color:var(--pi3)">PI 3 — Bedroom &amp; Living Room</h2>
@@ -825,63 +308,70 @@
     </div>
 
     <div class="grid grid-4 mb">
-      <!-- DHT1 -->
-      <div class="card pi3">
+
+      <div class="card pi3" id="card-dht1">
         <div class="card-label">Bedroom DHT</div>
         <div class="card-code">DHT1</div>
         <div style="display:flex;gap:1rem;align-items:baseline">
-          <div><div class="card-value" style="color:var(--pi3)">20.1<span class="card-unit">°C</span></div></div>
-          <div><div class="card-value" style="color:var(--accent);font-size:1.2rem">51<span class="card-unit">%</span></div></div>
+          <div class="card-value" id="dht1-temp" style="color:var(--pi3)">--<span class="card-unit">°C</span></div>
+          <div class="card-value" id="dht1-hum"  style="color:var(--accent);font-size:1.2rem">--<span class="card-unit">%</span></div>
         </div>
-        <div class="card-status"><div class="status-indicator status-on"></div><span style="color:var(--muted)">Normal</span></div>
+        <div class="card-status">
+          <div class="status-indicator status-off" id="dht1-indicator"></div>
+          <span id="dht1-text" style="color:var(--muted)">No data</span>
+        </div>
+        <div class="last-updated" id="dht1-time"></div>
       </div>
 
-      <!-- DHT2 -->
-      <div class="card pi3">
+      <div class="card pi3" id="card-dht2">
         <div class="card-label">Master Bedroom DHT</div>
         <div class="card-code">DHT2</div>
         <div style="display:flex;gap:1rem;align-items:baseline">
-          <div><div class="card-value" style="color:var(--pi3)">21.8<span class="card-unit">°C</span></div></div>
-          <div><div class="card-value" style="color:var(--accent);font-size:1.2rem">47<span class="card-unit">%</span></div></div>
+          <div class="card-value" id="dht2-temp" style="color:var(--pi3)">--<span class="card-unit">°C</span></div>
+          <div class="card-value" id="dht2-hum"  style="color:var(--accent);font-size:1.2rem">--<span class="card-unit">%</span></div>
         </div>
-        <div class="card-status"><div class="status-indicator status-on"></div><span style="color:var(--muted)">Normal</span></div>
+        <div class="card-status">
+          <div class="status-indicator status-off" id="dht2-indicator"></div>
+          <span id="dht2-text" style="color:var(--muted)">No data</span>
+        </div>
+        <div class="last-updated" id="dht2-time"></div>
       </div>
 
-      <!-- DPIR3 -->
-      <div class="card pi3">
+      <div class="card pi3" id="card-dpir3">
         <div class="card-label">Living Room Motion</div>
         <div class="card-code">DPIR3</div>
-        <div class="card-value" style="color:var(--muted);font-size:1.3rem">IDLE</div>
+        <div class="card-value" id="dpir3-value" style="font-size:1.3rem;color:var(--muted)">--</div>
         <div class="card-status">
-          <div class="status-indicator status-off"></div>
-          <span style="color:var(--muted)">No movement</span>
+          <div class="status-indicator status-off" id="dpir3-indicator"></div>
+          <span id="dpir3-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="dpir3-time"></div>
       </div>
 
-      <!-- IR -->
-      <div class="card pi3">
+      <div class="card pi3" id="card-ir">
         <div class="card-label">Infrared Remote</div>
         <div class="card-code">IR</div>
-        <div class="card-value" style="font-size:1.1rem;color:var(--muted)">STANDBY</div>
-        <div style="margin-top:0.6rem;font-size:0.65rem;font-family:'Space Mono',monospace;color:var(--muted)">
-          Controls BRGB via remote
+        <div class="card-value" id="ir-value" style="font-size:1.1rem;color:var(--muted)">--</div>
+        <div class="card-status">
+          <div class="status-indicator status-off" id="ir-indicator"></div>
+          <span id="ir-text" style="color:var(--muted)">No data</span>
         </div>
+        <div class="last-updated" id="ir-time"></div>
       </div>
 
-      <!-- BRGB -->
       <div class="card pi3" style="grid-column: span 2;">
         <div class="card-label">Bedroom RGB Light</div>
         <div class="card-code">BRGB</div>
         <div class="rgb-preview" id="rgbPreview"></div>
-        <div class="color-swatches" id="swatches">
+        <div class="color-swatches">
           <div class="swatch active" style="background:#ff4500" onclick="setColor('#ff4500',this)"></div>
-          <div class="swatch" style="background:#ff6600" onclick="setColor('#ff6600',this)"></div>
-          <div class="swatch" style="background:#ffcc00" onclick="setColor('#ffcc00',this)"></div>
-          <div class="swatch" style="background:#00ff88" onclick="setColor('#00ff88',this)"></div>
-          <div class="swatch" style="background:#00e5ff" onclick="setColor('#00e5ff',this)"></div>
-          <div class="swatch" style="background:#7c3aed" onclick="setColor('#7c3aed',this)"></div>
-          <div class="swatch" style="background:#ff1493" onclick="setColor('#ff1493',this)"></div>
-          <div class="swatch" style="background:#ffffff" onclick="setColor('#ffffff',this)"></div>
+          <div class="swatch"        style="background:#ff6600" onclick="setColor('#ff6600',this)"></div>
+          <div class="swatch"        style="background:#ffcc00" onclick="setColor('#ffcc00',this)"></div>
+          <div class="swatch"        style="background:#00ff88" onclick="setColor('#00ff88',this)"></div>
+          <div class="swatch"        style="background:#00e5ff" onclick="setColor('#00e5ff',this)"></div>
+          <div class="swatch"        style="background:#7c3aed" onclick="setColor('#7c3aed',this)"></div>
+          <div class="swatch"        style="background:#ff1493" onclick="setColor('#ff1493',this)"></div>
+          <div class="swatch"        style="background:#ffffff" onclick="setColor('#ffffff',this)"></div>
         </div>
         <div class="toggle-wrap" style="margin-top:0.8rem">
           <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace">LIGHT ON/OFF</span>
@@ -892,167 +382,40 @@
         </div>
       </div>
 
-      <!-- LCD -->
       <div class="card pi3" style="grid-column: span 2;">
         <div class="card-label">Living Room LCD Display</div>
         <div class="card-code">LCD</div>
         <div style="background:#0a0f05;border-radius:8px;padding:1rem;border:1px solid #1a2510;margin-top:0.4rem">
-          <div style="font-family:'Space Mono',monospace;font-size:0.75rem;color:#7cfc00;letter-spacing:0.05em;line-height:1.8" id="lcdDisplay">
-            <div>DHT1: 20.1°C  51%RH</div>
-            <div id="lcdLine2" style="color:#5cb800">DHT2: 21.8°C  47%RH</div>
+          <div style="font-family:'Space Mono',monospace;font-size:0.75rem;color:#7cfc00;letter-spacing:0.05em;line-height:1.8">
+            <div id="lcdLine1">Waiting for data...</div>
+            <div id="lcdLine2" style="color:#5cb800"></div>
           </div>
         </div>
         <div style="font-size:0.65rem;color:var(--muted);font-family:'Space Mono',monospace;margin-top:0.5rem">
           Auto-cycling every 5 seconds
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- Grafana embed section (always visible) -->
+  <!-- ── Bottom row ─────────────────────────────────────────────────────── -->
   <div class="grid grid-2">
-    <div class="grafana-card">
-      <div class="floorplan-title">Grafana Dashboard</div>
-      <div class="grafana-placeholder">
-        <span class="icon">📊</span>
-        Configure Grafana embed URL in settings to display sensor panels here.
-        <br><br>
-        <code style="font-size:0.7rem;color:var(--border);padding:0.3rem 0.6rem;background:var(--surface2);border-radius:4px;">GRAFANA_URL not configured</code>
-      </div>
-    </div>
-
-    <div class="floorplan-card">
-      <div class="floorplan-title">Room Status Overview</div>
-      <div class="rooms-grid">
-        <div class="room-pill"><div class="room-dot" style="background:var(--green)"></div>BEDROOM<div style="font-size:0.6rem;color:var(--muted);margin-left:auto">20.1°C</div></div>
-        <div class="room-pill"><div class="room-dot" style="background:var(--green)"></div>MASTER BED<div style="font-size:0.6rem;color:var(--muted);margin-left:auto">21.8°C</div></div>
-        <div class="room-pill"><div class="room-dot" style="background:var(--green)"></div>KITCHEN<div style="font-size:0.6rem;color:var(--muted);margin-left:auto">22.4°C</div></div>
-        <div class="room-pill"><div class="room-dot" style="background:var(--green)"></div>LIVING RM<div style="font-size:0.6rem;color:var(--muted);margin-left:auto">OK</div></div>
-        <div class="room-pill"><div class="room-dot" style="background:var(--green)"></div>PORCH<div style="font-size:0.6rem;color:var(--muted);margin-left:auto">OK</div></div>
-        <div class="room-pill"><div class="room-dot" style="background:var(--muted)"></div>GARAGE<div style="font-size:0.6rem;color:var(--muted);margin-left:auto">--</div></div>
-      </div>
-    </div>
+  <div class="grafana-card" style="grid-column: span 2;">
+    <div class="floorplan-title">Grafana Panels</div>
+    <div id="grafanaTabs" style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem;overflow-x:auto;"></div>
+    <iframe
+      id="grafanaFrame"
+      width="100%"
+      height="450"
+      frameborder="0"
+      style="border-radius:8px;border:1px solid var(--border);">
+    </iframe>
+  </div>
   </div>
 
 </main>
 
-<script>
-  // Clock
-  function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent =
-      now.toTimeString().slice(0,8);
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  // PI Tab switching
-  function switchPI(n) {
-    document.querySelectorAll('.pi-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
-    document.querySelector(`.pi-tab[data-pi="${n}"]`).classList.add('active');
-    document.getElementById(`panel-${n}`).classList.add('active');
-  }
-
-  // Alarm toggle
-  let alarmActive = false;
-  function toggleAlarm() {
-    alarmActive = !alarmActive;
-    const btn = document.getElementById('alarmBtn');
-    btn.textContent = alarmActive ? '🔴 ALARM ON' : '⚠ ALARM OFF';
-    btn.classList.toggle('active', alarmActive);
-    document.querySelector('.status-dot').style.background = alarmActive ? 'var(--red)' : 'var(--green)';
-    document.querySelector('.status-dot').style.boxShadow = alarmActive ? '0 0 6px var(--red)' : '0 0 6px var(--green)';
-  }
-
-  // LED/Buzzer toggles
-  function updateLED(checkbox, statusId, textId) {
-    const statusEl = document.getElementById(statusId);
-    if (!statusEl) return;
-    if (checkbox.checked) {
-      statusEl.className = 'status-indicator status-on';
-    } else {
-      statusEl.className = 'status-indicator status-off';
-    }
-    if (textId) {
-      document.getElementById(textId).textContent = checkbox.checked ? 'ON' : 'OFF';
-    }
-  }
-
-  // Timer
-  let timerSeconds = 300;
-  let timerInterval = null;
-  let timerRunning = false;
-
-  function formatTime(s) {
-    const m = Math.floor(s / 60).toString().padStart(2,'0');
-    const sec = (s % 60).toString().padStart(2,'0');
-    return `${m}:${sec}`;
-  }
-
-  function timerAction(action) {
-    if (action === 'start') {
-      if (!timerRunning && timerSeconds > 0) {
-        timerRunning = true;
-        timerInterval = setInterval(() => {
-          if (timerSeconds > 0) {
-            timerSeconds--;
-            const el = document.getElementById('timerDisplay');
-            el.textContent = formatTime(timerSeconds);
-            if (timerSeconds === 0) {
-              // Blink
-              let blink = true;
-              timerInterval = setInterval(() => {
-                el.textContent = blink ? '00:00' : '    ';
-                blink = !blink;
-              }, 500);
-            }
-          }
-        }, 1000);
-      }
-    } else if (action === 'stop') {
-      clearInterval(timerInterval);
-      timerRunning = false;
-    } else if (action === 'reset') {
-      clearInterval(timerInterval);
-      timerRunning = false;
-      timerSeconds = 300;
-      document.getElementById('timerDisplay').textContent = '05:00';
-    }
-  }
-
-  function addTime(s) {
-    timerSeconds += s;
-    if (!timerRunning) {
-      document.getElementById('timerDisplay').textContent = formatTime(timerSeconds);
-    }
-  }
-
-  // RGB
-  function setColor(hex, el) {
-    document.getElementById('rgbPreview').style.background = hex;
-    document.getElementById('rgbPreview').style.boxShadow = `0 4px 20px ${hex}55`;
-    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-    el.classList.add('active');
-  }
-
-  function toggleRGB(cb) {
-    const preview = document.getElementById('rgbPreview');
-    preview.style.opacity = cb.checked ? '1' : '0.1';
-  }
-
-  // LCD cycle
-  const lcdLines = [
-    ['DHT1: 20.1°C  51%RH', 'DHT2: 21.8°C  47%RH'],
-    ['DHT2: 21.8°C  47%RH', 'DHT3: 22.4°C  58%RH'],
-    ['DHT3: 22.4°C  58%RH', 'DHT1: 20.1°C  51%RH'],
-  ];
-  let lcdIndex = 0;
-  setInterval(() => {
-    lcdIndex = (lcdIndex + 1) % lcdLines.length;
-    document.querySelector('#lcdDisplay div:first-child').textContent = lcdLines[lcdIndex][0];
-    document.getElementById('lcdLine2').textContent = lcdLines[lcdIndex][1];
-  }, 5000);
-</script>
+<script src="script.js"></script>
 </body>
 </html>
